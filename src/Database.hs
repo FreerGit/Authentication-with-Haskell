@@ -14,7 +14,7 @@ import           Database.Persist.Postgresql (Entity, ConnectionString, withPost
 import           Schema
 
 connString :: ConnectionString
-connString = "host=localhost port=5000 user=admin dbname=haskell password=admin"
+connString = "host=127.0.0.1 port=5432 user=admin dbname=admin password=admin"
 
 runAction :: ConnectionString -> SqlPersistT (LoggingT IO) a ->  IO a
 runAction connString action = runStdoutLoggingT $ withPostgresqlConn connString $ 
