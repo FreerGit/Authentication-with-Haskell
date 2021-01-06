@@ -15,6 +15,7 @@ import           Network.Wai.Handler.Warp (run)
 import           Servant.API
 import           Servant.Client
 import           Servant.Server
+import           Data.Text (Text)
 
 import Database
 import Schema
@@ -22,6 +23,7 @@ import Schema
 type UsersAPI =
          "users" :> Capture "userid" Int64 :> Get '[JSON] User
     :<|> "users" :> ReqBody '[JSON] User :> Post '[JSON] Int64
+    :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
 
 fetcherUserHandler :: ConnectionString -> Int64 -> Handler User
@@ -38,10 +40,16 @@ createUserHandler connString user = do
         Just key -> return key
         Nothing -> Handler $ (throwE $ err401 {errBody = "Could not create user"})
 
+deleteUserHandler :: ConnectionString -> Int64 -> Handler ()
+deleteUserHandler connString uid = do
+    maybeUser <- liftIO $ deleteUserDB connString uid
+    return maybeUser
+    
 usersServer :: ConnectionString -> Server UsersAPI
 usersServer connString =
          (fetcherUserHandler connString) 
     :<|> (createUserHandler connString)
+    :<|> (deleteUserHandler connString)
     
 
 usersAPI :: Proxy UsersAPI
