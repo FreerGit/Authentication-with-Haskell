@@ -7,17 +7,13 @@
 {-# LANGUAGE RecordWildCards            #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE DerivingStrategies         #-}
-{-# LANGUAGE StandaloneDeriving         #-}
-{-# LANGUAGE UndecidableInstances       #-}
-{-# LANGUAGE DataKinds                  #-}
 
 module Schema where
 
-import           Data.Aeson
-import           Data.Aeson.Types
-import           Database.Persist (Entity(..), Entity, keyValueEntityToJSON)
-import           Database.Persist.Sql (fromSqlKey, toSqlKey)
+import           Data.Aeson (ToJSON, toJSON, object, (.=), FromJSON, parseJSON, (.:), withObject
+                            , Object)
+import           Data.Aeson.Types (Parser)
+import           Database.Persist (Entity(..), Entity)
 import qualified Database.Persist.TH as PTH
 import           Data.Text (Text)
 
@@ -31,9 +27,6 @@ PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persi
     deriving Show Read
 |]
 
-instance ToJSON (Entity User) where
-    toJSON = keyValueEntityToJSON
-
 instance ToJSON User where 
   toJSON user = object 
     [ "name" .= userName user
@@ -41,7 +34,6 @@ instance ToJSON User where
     , "age" .= userAge user
     , "occupation" .= userOccupation user
     ]
-
 
 instance FromJSON User where
   parseJSON = withObject "User" parseUser
