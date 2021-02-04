@@ -22,16 +22,20 @@ import Schema
 
 type UsersAPI =
          "users" :> Capture "userid" Int64 :> Get '[JSON] User
+    :<|> "users" :> Get '[JSON] [Entity User]
     :<|> "users" :> ReqBody '[JSON] User :> Post '[JSON] Int64
     :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
 
-fetcherUserHandler :: ConnectionString -> Int64 -> Handler User
-fetcherUserHandler connString uid = do
+fetchSpecificUserHandler :: ConnectionString -> Int64 -> Handler User
+fetchSpecificUserHandler connString uid = do
     maybeUser <- liftIO $ fetchUserDB connString uid
     case maybeUser of
         Just user -> return user
         Nothing -> Handler $ (throwE $ err401 {errBody = "Could not find user"})
+
+fetchUserHandler :: ConnectionString -> Handler [Entity User]
+fetchUserHandler connString = liftIO $ fetchUsersDB connString
 
 createUserHandler :: ConnectionString -> User -> Handler Int64
 createUserHandler connString user = do
@@ -47,7 +51,8 @@ deleteUserHandler connString uid = do
     
 usersServer :: ConnectionString -> Server UsersAPI
 usersServer connString =
-         (fetcherUserHandler connString) 
+         (fetchSpecificUserHandler connString)
+    :<|> (fetchUserHandler connString)
     :<|> (createUserHandler connString)
     :<|> (deleteUserHandler connString)
     
