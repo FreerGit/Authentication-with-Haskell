@@ -19,6 +19,7 @@ import           Data.Text (Text)
 
 import Database
 import Schema
+import Cache
 
 type UsersAPI =
          "users" :> Capture "userid" Int64 :> Get '[JSON] User
@@ -26,35 +27,42 @@ type UsersAPI =
     :<|> "users" :> ReqBody '[JSON] User :> Post '[JSON] Int64
     :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
+type DBInfo = ConnectionString
 
-fetchSpecificUserHandler :: ConnectionString -> Int64 -> Handler User
-fetchSpecificUserHandler connString uid = do
-    maybeUser <- liftIO $ fetchUserDB connString uid
-    case maybeUser of
+-- @TODO i believe there is syntax sugar for the nested cases, bind operator??
+-- Not sure how to use it yet though, this will do for now.
+fetchSpecificUserHandler :: DBInfo -> RedisInfo -> Int64 -> Handler User
+fetchSpecificUserHandler connString redisInfo uid = do
+    maybeCached <- liftIO $ fetchCachedUser redisInfo uid
+    case maybeCached of
         Just user -> return user
-        Nothing -> Handler $ (throwE $ err401 {errBody = "Could not find user"})
+        Nothing -> do
+            maybeUser <- liftIO $ fetchUserDB connString uid
+            case maybeUser of
+                Just user -> liftIO $ cacheUser redisInfo uid user >> return user
+                Nothing -> Handler $ (throwE $ err401 {errBody = "Could not find user"})
 
-fetchUserHandler :: ConnectionString -> Handler [Entity User]
-fetchUserHandler connString = liftIO $ fetchUsersDB connString
-
-createUserHandler :: ConnectionString -> User -> Handler Int64
+fetchUserHandler :: DBInfo -> Handler [Entity User]
+fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
+            
+createUserHandler :: DBInfo -> User -> Handler Int64
 createUserHandler connString user = do
     maybeNewKey <- liftIO $ createUserDB connString user
     case maybeNewKey of
         Just key -> return key
         Nothing -> Handler $ (throwE $ err401 {errBody = "Could not create user"})
 
-deleteUserHandler :: ConnectionString -> Int64 -> Handler ()
+deleteUserHandler :: DBInfo -> Int64 -> Handler ()
 deleteUserHandler connString uid = do
     maybeUser <- liftIO $ deleteUserDB connString uid
     return maybeUser
     
-usersServer :: ConnectionString -> Server UsersAPI
-usersServer connString =
-         (fetchSpecificUserHandler connString)
-    :<|> (fetchUserHandler connString)
-    :<|> (createUserHandler connString)
-    :<|> (deleteUserHandler connString)
+usersServer :: DBInfo -> RedisInfo -> Server UsersAPI
+usersServer connString redisInfo =
+         (fetchSpecificUserHandler connString redisInfo)
+    :<|> (fetchUserHandler connString )
+    :<|> (createUserHandler connString )
+    :<|> (deleteUserHandler connString )
     
 
 usersAPI :: Proxy UsersAPI
@@ -62,4 +70,4 @@ usersAPI = Proxy
 
 runServer :: IO ()
 runServer = do
-    run 8000 (serve usersAPI (usersServer connString))
+    run 8000 (serve usersAPI (usersServer connString connStringRedis))

@@ -3,3 +3,4 @@
 .stack*
 database.env
 dist*
+.env
