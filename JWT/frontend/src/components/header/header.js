@@ -6,9 +6,11 @@ const Header = () => (
 	<header class={style.header}>
 		<h1>Preact App</h1>
 		<nav>
-			<Link activeClassName={style.active} href="/">Register</Link>
+			<Link activeClassName={style.active} href="/">Home</Link>
+			<Link activeClassName={style.active} href="/register">Register</Link>
+			<Link activeClassName={style.active} href="/login">Login</Link>
 		</nav>
 	</header>
 );
-  
+
 export default Header;

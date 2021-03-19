@@ -2,7 +2,7 @@ import { h } from 'preact';
 import style from './style.css';
 import { useState } from 'preact/hooks';
 
-const Register = () => {
+const Login = () => {
 	const [name, setName] = useState();
 	const [password, setPassword] = useState();
 
@@ -12,20 +12,20 @@ const Register = () => {
 	};
 
 	return (
-		<div class={style.register}>
-			<h1>Register</h1>
-			<p>This is the Register component.</p>
+		<div class={style.login}>
+			<h1>Login</h1>
+			<p>This is the Login component.</p>
 			<form onSubmit={handleSubmit}>
 				<input type="text" onInput={(c) => setName(c.target.value)} />
 				<input type="text" onInput={(c) => setPassword(c.target.value)} />
-				<button type="submit">Register Now!</button>
+				<button type="submit">Login Now!</button>
 			</form>
 		</div >
 	);
 
 };
 
-export default Register;
+export default Login;
 
 
 
