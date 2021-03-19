@@ -1,0 +1,9 @@
+version: '3'
+#define services
+services: 
+    frontend:
+        build: frontend
+        ports: 
+            - "8080:8080"
+        volumes: 
+            - "./frontend:/app"
