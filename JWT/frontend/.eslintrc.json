@@ -2,16 +2,29 @@
     "env": {
         "browser": true,
         "commonjs": true,
-        "es6": true
+        "es2021": true
     },
-    "extends": ["eslint:recommended"],
+    "extends": [
+        "eslint:recommended",
+        "preact"
+    ],
     "parserOptions": {
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaVersion": 12
     },
     "rules": {
-        "indent": ["error", 4],
-        "quotes": ["error", "single"],
-        "semi": ["error", "always"],
+        "indent": [
+            "error",
+            "tab"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            2,
+            "always"
+        ],
         "no-console": "off"
     }
 }
