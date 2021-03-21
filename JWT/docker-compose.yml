@@ -1,5 +1,4 @@
 version: '3'
-#define services
 services: 
     frontend:
         build: frontend
@@ -7,3 +6,26 @@ services:
             - "8080:8080"
         volumes: 
             - "./frontend:/app"
+    # backend:
+    #     build: backend
+    #     ports:
+    #         - "3000:3000"
+    #     volumes:
+    #         - "./backend:/server"
+    database:
+        image: "postgres" # use latest official postgres version
+        env_file:
+        - database.env # configure postgres
+        volumes:
+        - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
+        ports:
+        - "5432:5432"
+
+    redis:
+        image: redis
+        container_name: redis-db
+        ports:
+        - "6379:6379"
+
+volumes:
+  database-data: # named volumes can be managed easier using docker-compose

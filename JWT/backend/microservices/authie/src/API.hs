@@ -29,8 +29,6 @@ type UsersAPI =
 
 type DBInfo = ConnectionString
 
--- @TODO i believe there is syntax sugar for the nested cases, bind operator??
--- Not sure how to use it yet though, this will do for now.
 fetchSpecificUserHandler :: DBInfo -> RedisInfo -> Int64 -> Handler User
 fetchSpecificUserHandler connString redisInfo uid = do
     maybeCached <- liftIO $ fetchCachedUser redisInfo uid
@@ -40,7 +38,7 @@ fetchSpecificUserHandler connString redisInfo uid = do
             maybeUser <- liftIO $ fetchUserDB connString uid
             case maybeUser of
                 Just user -> liftIO $ cacheUser redisInfo uid user >> return user
-                Nothing -> Handler $ (throwE $ err401 {errBody = "Could not find user"})
+                Nothing -> Handler $ throwE $ err401 {errBody = "Could not find user"}
 
 fetchUserHandler :: DBInfo -> Handler [Entity User]
 fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
@@ -50,19 +48,19 @@ createUserHandler connString user = do
     maybeNewKey <- liftIO $ createUserDB connString user
     case maybeNewKey of
         Just key -> return key
-        Nothing -> Handler $ (throwE $ err401 {errBody = "Could not create user"})
+        Nothing -> Handler $ throwE $ err401 {errBody = "Could not create user"}
 
 deleteUserHandler :: DBInfo -> Int64 -> Handler ()
 deleteUserHandler connString uid = do
-    maybeUser <- liftIO $ deleteUserDB connString uid
-    return maybeUser
+    liftIO $ deleteUserDB connString uid
+   
     
 usersServer :: DBInfo -> RedisInfo -> Server UsersAPI
 usersServer connString redisInfo =
-         (fetchSpecificUserHandler connString redisInfo)
-    :<|> (fetchUserHandler connString )
-    :<|> (createUserHandler connString )
-    :<|> (deleteUserHandler connString )
+         fetchSpecificUserHandler connString redisInfo
+    :<|> fetchUserHandler connString 
+    :<|> createUserHandler connString 
+    :<|> deleteUserHandler connString 
     
 
 usersAPI :: Proxy UsersAPI

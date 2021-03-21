@@ -7,8 +7,8 @@ import           Control.Monad.Reader (runReaderT)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Data.Int (Int64)
 import           Database.Persist (get, insertBy, delete, selectList, Filter, Entity)
-import           Database.Persist.Sql (fromSqlKey, toSqlKey)
-import           Database.Persist.Postgresql (Entity, ConnectionString, withPostgresqlConn, 
+import           Database.Persist.Sql (fromSqlKey, toSqlKey, runSqlPool)
+import           Database.Persist.Postgresql (Entity, ConnectionString, withPostgresqlPool, 
                                              runMigration, SqlPersistT)
 
 import           Schema
@@ -17,8 +17,8 @@ connString :: ConnectionString
 connString = "host=127.0.0.1 port=5432 user=admin dbname=admin password=admin"
 
 runAction :: ConnectionString -> SqlPersistT (LoggingT IO) a ->  IO a
-runAction connString action = runStdoutLoggingT $ withPostgresqlConn connString $ 
-    \backend -> runReaderT action backend
+runAction connString action = runStdoutLoggingT $ withPostgresqlPool connString 10 $
+    \backend -> runSqlPool action backend
 
 migrateDB :: ConnectionString -> IO ()
 migrateDB connString = runAction connString (runMigration migrateAll)
@@ -27,10 +27,7 @@ fetchUserDB :: ConnectionString -> Int64 -> IO (Maybe User)
 fetchUserDB connString uid = runAction connString (get (toSqlKey uid))
 
 fetchUsersDB :: ConnectionString -> IO [Entity User]
-fetchUsersDB connString = do
-    found <- runAction connString (selectList ([] :: [Filter User]) [])
-    return found
-
+fetchUsersDB connString = runAction connString (selectList ([] :: [Filter User]) [])
 
 createUserDB :: ConnectionString -> User -> IO (Maybe Int64)
 createUserDB connString user = do
