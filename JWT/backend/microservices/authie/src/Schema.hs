@@ -22,10 +22,8 @@ import           Data.Text (Text)
 
 PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persistLowerCase|
   User sql=users
-    name Text
     email Text
-    age Int
-    occupation Text
+    password Text
     UniqueEmail email
     deriving Show Read
 |]
@@ -35,10 +33,8 @@ instance ToJSON (Entity User) where
 
 instance ToJSON User where 
   toJSON user = object 
-    [ "name" .= userName user
-    , "email" .= userEmail user
-    , "age" .= userAge user
-    , "occupation" .= userOccupation user
+    [ "email" .= userEmail user
+    , "password" .= userPassword user
     ]
 
 instance FromJSON User where
@@ -46,13 +42,9 @@ instance FromJSON User where
 
 parseUser :: Object -> Parser User
 parseUser o = do
-  uName <- o .: "name"
   uEmail <- o .: "email"
-  uAge <- o .: "age"
-  uOccupation <- o .: "occupation"
+  uPassword <- o .: "password"
   return User
-    { userName = uName
-    , userEmail = uEmail
-    , userAge = uAge
-    , userOccupation = uOccupation
+    { userEmail = uEmail
+    , userPassword = uPassword
     }
