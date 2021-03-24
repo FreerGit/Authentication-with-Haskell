@@ -36,6 +36,11 @@ dependencies:
 - transformers
 - warp
 - hedis
+- jwt
+- containers
+- time
+- load-env
+- envy
 
 library:
   source-dirs: 

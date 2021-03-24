@@ -5,59 +5,66 @@
 module API where
 
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Except (throwE)
+import Control.Monad.Trans.Except (throwE, runExceptT)
 import Data.Int (Int64)
 import Data.Proxy (Proxy(..))
 import Database.Persist (Key, Entity)
 import Database.Persist.Sql
-import Database.Persist.Postgresql (ConnectionString)
 import Network.Wai.Handler.Warp (run)
 import Servant.API
 import Servant.Client
 import Servant.Server
 import Data.Text (Text)
+import Data.Time.Clock (getCurrentTime)
 
 import Database.User
 import Database.Schema
 import Database.UserCache
 import Authentication.Password
+import Authentication.JWT
+import Config
 
 type UsersAPI =
          "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Int64
     :<|> "v1" :> "users"    :> Get '[JSON] [Entity User]
-    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Get '[JSON] Bool
+    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Get '[JSON] Token
 
     -- :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
-type DBInfo = ConnectionString
-
-loginHandler :: DBInfo  -> User -> Handler Bool
-loginHandler connString user = do
+loginHandler :: Env -> User -> Handler Token
+loginHandler env user = do
+    let connString = getConnString env
     maybeUser <- liftIO $ fetchUserDB connString (userEmail user)
     case maybeUser of
-        Just foundUser -> return $ validateHashedPassword (userPassword $ entityVal foundUser) (userPassword user)
+        Just foundUser -> do
+            time <- liftIO getCurrentTime
+            let secret = getJWTSecret env
+            if validateHashedPassword (userPassword $ entityVal foundUser) (userPassword user)
+                then return $ mkJWT time secret (fromSqlKey $ entityKey foundUser)
+                else Handler $ throwE $ err402 {errBody = "Could not make JWT"}
         Nothing -> Handler $ throwE $ err401 {errBody = "Could not find user"}
 
 fetchUserHandler :: DBInfo -> Handler [Entity User]
 fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
             
 registerHandler :: DBInfo -> User -> Handler Int64
-registerHandler connString user = do
-    maybeNewKey <- liftIO $ createUserDB connString user
+registerHandler dbInfo user = do
+    maybeNewKey <- liftIO $ createUserDB dbInfo user
     case maybeNewKey of
         Just key -> return key
         Nothing -> Handler $ throwE $ err401 {errBody = "Could not create user"}
 
-deleteUserHandler :: DBInfo -> Int64 -> Handler ()
-deleteUserHandler connString uid = do
-    liftIO $ deleteUserDB connString uid
+-- deleteUserHandler :: Env -> Int64 -> Handler ()
+-- deleteUserHandler env uid = do
+--     liftIO $ deleteUserDB connString uid
    
     
-usersServer :: DBInfo -> Server UsersAPI
-usersServer connString =
-         registerHandler connString 
-    :<|> fetchUserHandler connString 
-    :<|> loginHandler connString
+
+usersServer :: Env -> Server UsersAPI
+usersServer env =
+         registerHandler (getConnString env) 
+    :<|> fetchUserHandler (getConnString env)
+    :<|> loginHandler env
     -- :<|> deleteUserHandler connString 
     
 
@@ -66,4 +73,7 @@ usersAPI = Proxy
 
 runServer :: IO ()
 runServer = do
-    run 8000 (serve usersAPI (usersServer connString))
+    env <- runExceptT initialize
+    case env of
+        Left err -> putStrLn err
+        Right res -> run 8000 (serve usersAPI (usersServer res))
