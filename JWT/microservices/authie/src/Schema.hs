@@ -19,32 +19,37 @@ import           Data.Aeson.Types
 import           Database.Persist (Entity(..), Entity, keyValueEntityToJSON)
 import qualified Database.Persist.TH as PTH
 import           Data.Text (Text)
+import           Data.ByteString
 
-PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persistLowerCase|
-  User sql=users
+
+-- import           Models
+
+
+PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persistUpperCase|
+  User sql=users json
     email Text
     password Text
     UniqueEmail email
     deriving Show Read
 |]
 
-instance ToJSON (Entity User) where
-    toJSON = keyValueEntityToJSON
+-- instance ToJSON (Entity User) where
+--     toJSON = keyValueEntityToJSON
 
-instance ToJSON User where 
-  toJSON user = object 
-    [ "email" .= userEmail user
-    , "password" .= userPassword user
-    ]
+-- instance ToJSON User where 
+--     toJSON user = object 
+--         [ "email" .= userEmail user
+--         , "password" .= userPassword user
+--         ]
 
-instance FromJSON User where
-  parseJSON = withObject "User" parseUser
+-- instance FromJSON User where
+--   parseJSON = withObject "User" parseUser
 
 parseUser :: Object -> Parser User
 parseUser o = do
-  uEmail <- o .: "email"
-  uPassword <- o .: "password"
-  return User
-    { userEmail = uEmail
-    , userPassword = uPassword
-    }
+    uEmail <- o .: "email"
+    uPassword <- o .: "password"
+    return User
+        { userEmail = uEmail
+        , userPassword = uPassword
+        }
