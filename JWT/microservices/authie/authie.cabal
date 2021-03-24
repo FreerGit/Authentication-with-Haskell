@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d384f77660d632c627715342cfa7126cad8d58758b8df6eff2be343769f53d7
+-- hash: b48cf4ce747fa98eeca470c72037cec1ce24e626fcaeae600981fe232b29d64a
 
 name:           authie
-version:        0.1.0.0
+version:        1.0.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/authie#readme>
 homepage:       https://github.com/githubuser/authie#readme
 bug-reports:    https://github.com/githubuser/authie/issues
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       API
+      Authentication.Password
       Cache
       Database
       Schema
@@ -38,11 +39,11 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bcrypt
     , bytestring
     , hedis
     , monad-logger
     , mtl
-    , password
     , persistent
     , persistent-postgresql
     , persistent-template
@@ -65,11 +66,11 @@ executable authie-exe
       aeson
     , authie
     , base >=4.7 && <5
+    , bcrypt
     , bytestring
     , hedis
     , monad-logger
     , mtl
-    , password
     , persistent
     , persistent-postgresql
     , persistent-template
@@ -93,11 +94,11 @@ test-suite authie-test
       aeson
     , authie
     , base >=4.7 && <5
+    , bcrypt
     , bytestring
     , hedis
     , monad-logger
     , mtl
-    , password
     , persistent
     , persistent-postgresql
     , persistent-template

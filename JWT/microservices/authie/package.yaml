@@ -1,5 +1,5 @@
 name:                authie
-version:             0.1.0.0
+version:             1.0.0.0
 github:              "githubuser/authie"
 license:             BSD3
 author:              "Author name here"
@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - text
-- password
+- bcrypt
 - monad-logger
 - mtl
 - persistent
@@ -38,7 +38,8 @@ dependencies:
 - hedis
 
 library:
-  source-dirs: src
+  source-dirs: 
+  - src
 
 executables:
   authie-exe:

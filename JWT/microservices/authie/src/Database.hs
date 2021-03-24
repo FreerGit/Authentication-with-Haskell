@@ -7,11 +7,13 @@ import           Control.Monad.Reader (runReaderT)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Data.Int (Int64)
 import           Database.Persist (get, insertBy, delete, selectList, Filter, Entity)
-import           Database.Persist.Sql (fromSqlKey, toSqlKey, runSqlPool)
+import           Database.Persist.Sql (fromSqlKey, toSqlKey, runSqlPool, toPersistValue)
 import           Database.Persist.Postgresql (Entity, ConnectionString, withPostgresqlPool, 
                                              runMigration, SqlPersistT)
 
 import           Schema
+import           Authentication.Password
+-- import           Models
 
 connString :: ConnectionString
 connString = "host=127.0.0.1 port=5432 user=admin dbname=admin password=admin"
@@ -31,7 +33,9 @@ fetchUsersDB connString = runAction connString (selectList ([] :: [Filter User])
 
 createUserDB :: ConnectionString -> User -> IO (Maybe Int64)
 createUserDB connString user = do
-    maybeUserKey <- runAction connString (insertBy user)
+    hashedPassword <- liftIO $ hashPassword $ userPassword user
+    let encryptedUser = User (userEmail user) hashedPassword
+    maybeUserKey <- runAction connString (insertBy encryptedUser)
     case maybeUserKey of
         Right key -> return $ Just $ fromSqlKey key
         Left _ -> return Nothing
