@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1814f8430a93e6636fda08968109af776a23c8ec3232e6c295d7cdf9007b0f70
+-- hash: 65f7bb43850e4dc2d834dc01016c4186c3e5b2c106dfbcdfb3ca3d9e8e8bbbfb
 
 name:           authie
 version:        1.0.0.0
@@ -28,7 +28,9 @@ source-repository head
 library
   exposed-modules:
       API
+      Authentication.JWT
       Authentication.Password
+      Config
       Database.Schema
       Database.User
       Database.UserCache
@@ -41,7 +43,11 @@ library
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , containers
+    , envy
     , hedis
+    , jwt
+    , load-env
     , monad-logger
     , mtl
     , persistent
@@ -51,6 +57,7 @@ library
     , servant-client
     , servant-server
     , text
+    , time
     , transformers
     , warp
   default-language: Haskell2010
@@ -68,7 +75,11 @@ executable authie-exe
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , containers
+    , envy
     , hedis
+    , jwt
+    , load-env
     , monad-logger
     , mtl
     , persistent
@@ -78,6 +89,7 @@ executable authie-exe
     , servant-client
     , servant-server
     , text
+    , time
     , transformers
     , warp
   default-language: Haskell2010
@@ -96,7 +108,11 @@ test-suite authie-test
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , containers
+    , envy
     , hedis
+    , jwt
+    , load-env
     , monad-logger
     , mtl
     , persistent
@@ -106,6 +122,7 @@ test-suite authie-test
     , servant-client
     , servant-server
     , text
+    , time
     , transformers
     , warp
   default-language: Haskell2010
