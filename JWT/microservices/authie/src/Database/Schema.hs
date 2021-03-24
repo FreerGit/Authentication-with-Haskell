@@ -12,19 +12,19 @@
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE DataKinds                  #-}
 
-module Schema where
+module Database.Schema where
 
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Database.Persist (Entity(..), Entity, keyValueEntityToJSON)
 import qualified Database.Persist.TH as PTH
 import           Data.Text (Text)
-import           Data.ByteString
 
 
 -- import           Models
 
-
+-- With the help from template haskell, the json statement essentially produces
+-- the commented code below, neat.
 PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persistUpperCase|
   User sql=users json
     email Text
@@ -32,6 +32,8 @@ PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persi
     UniqueEmail email
     deriving Show Read
 |]
+
+type Email = Text
 
 -- instance ToJSON (Entity User) where
 --     toJSON = keyValueEntityToJSON
@@ -45,11 +47,11 @@ PTH.share [PTH.mkPersist PTH.sqlSettings, PTH.mkMigrate "migrateAll"] [PTH.persi
 -- instance FromJSON User where
 --   parseJSON = withObject "User" parseUser
 
-parseUser :: Object -> Parser User
-parseUser o = do
-    uEmail <- o .: "email"
-    uPassword <- o .: "password"
-    return User
-        { userEmail = uEmail
-        , userPassword = uPassword
-        }
+-- parseUser :: Object -> Parser User
+-- parseUser o = do
+--     uEmail <- o .: "email"
+--     uPassword <- o .: "password"
+--     return User
+--         { userEmail = uEmail
+--         , userPassword = uPassword
+--         }
