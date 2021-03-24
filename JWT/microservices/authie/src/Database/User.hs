@@ -1,17 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Database where
+module Database.User where
 
 import           Control.Monad.Logger (runStdoutLoggingT, MonadLogger, LoggingT)
 import           Control.Monad.Reader (runReaderT)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Data.Int (Int64)
-import           Database.Persist (get, insertBy, delete, selectList, Filter, Entity)
+import           Database.Persist (get, insertBy, delete, selectList, Filter, Entity, getBy)
 import           Database.Persist.Sql (fromSqlKey, toSqlKey, runSqlPool, toPersistValue)
 import           Database.Persist.Postgresql (Entity, ConnectionString, withPostgresqlPool, 
                                              runMigration, SqlPersistT)
 
-import           Schema
+import           Database.Schema
 import           Authentication.Password
 -- import           Models
 
@@ -25,8 +25,10 @@ runAction connString action = runStdoutLoggingT $ withPostgresqlPool connString 
 migrateDB :: ConnectionString -> IO ()
 migrateDB connString = runAction connString (runMigration migrateAll)
 
-fetchUserDB :: ConnectionString -> Int64 -> IO (Maybe User)
-fetchUserDB connString uid = runAction connString (get (toSqlKey uid))
+fetchUserDB :: ConnectionString -> Email -> IO (Maybe (Entity User))
+fetchUserDB connString email = do
+    let getByEmail = getBy $ UniqueEmail email
+    runAction connString getByEmail
 
 fetchUsersDB :: ConnectionString -> IO [Entity User]
 fetchUsersDB connString = runAction connString (selectList ([] :: [Filter User]) [])

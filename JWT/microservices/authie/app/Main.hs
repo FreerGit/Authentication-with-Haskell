@@ -1,6 +1,6 @@
 module Main where
 
-import Database (connString, migrateDB)
+import Database.User (connString, migrateDB)
 import API (runServer)
 
 setupDB :: IO ()

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b48cf4ce747fa98eeca470c72037cec1ce24e626fcaeae600981fe232b29d64a
+-- hash: 1814f8430a93e6636fda08968109af776a23c8ec3232e6c295d7cdf9007b0f70
 
 name:           authie
 version:        1.0.0.0
@@ -29,9 +29,9 @@ library
   exposed-modules:
       API
       Authentication.Password
-      Cache
-      Database
-      Schema
+      Database.Schema
+      Database.User
+      Database.UserCache
   other-modules:
       Paths_authie
   hs-source-dirs:
