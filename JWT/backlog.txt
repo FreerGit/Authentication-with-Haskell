@@ -9,4 +9,4 @@ I think...?? I think i should initialize the pool with the config and pass it ar
 - Use jose library for JWT instead, supposedly safer??
 http://hackage.haskell.org/package/jose
 
-
+- unsafePassword type and Password type for non-hashed and hashed passwords.
