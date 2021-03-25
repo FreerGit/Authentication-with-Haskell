@@ -1,5 +1,7 @@
 ## Simply a backlog for features or bugs that are not prioritized ##
 
+- REMEMBER to change AUD claim when you know the address later on!
+
 - Dire need of refactor, get functionality off the ground and then look at this repository:
 https://github.com/dandoh/web-haskell-graphql-postgres-boilerplate
 
@@ -10,3 +12,5 @@ I think...?? I think i should initialize the pool with the config and pass it ar
 http://hackage.haskell.org/package/jose
 
 - unsafePassword type and Password type for non-hashed and hashed passwords.
+
+
