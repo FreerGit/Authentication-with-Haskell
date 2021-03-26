@@ -8,15 +8,19 @@ import Home from '../routes/home/home';
 import Register from '../routes/register/register';
 import Login from '../routes/login/login';
 
-const App = () => (
-	<div id="app">
-		<Header />
-		<Router>
-			<Home path="/" />
-			<Register path="/register" />
-			<Login path="/login" />
-		</Router>
-	</div>
-);
+
+
+const App = () => {
+	return (
+		<div id="app" >
+			<Header />
+			<Router>
+				<Home path="/" />
+				<Register path="/register" />
+				<Login path="/login" />
+			</Router>
+		</div >
+	);
+};
 
 export default App;

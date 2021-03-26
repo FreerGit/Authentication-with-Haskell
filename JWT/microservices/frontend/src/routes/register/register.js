@@ -1,14 +1,26 @@
 import { h } from 'preact';
 import style from './style.css';
 import { useState } from 'preact/hooks';
+import postData from '../../lib/requests';
+
 
 const Register = () => {
 	const [name, setName] = useState();
 	const [password, setPassword] = useState();
 
 	const handleSubmit = (event) => {
+		const registerInfo = {
+			email: name,
+			password
+		};
 		event.preventDefault();
-		console.log(`${name} ${password}`);
+		postData('register', registerInfo)
+			.then(data => {
+				console.log(data);
+			})
+			.catch(error => {
+				console.log(error);
+			});
 	};
 
 	return (

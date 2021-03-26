@@ -1,14 +1,25 @@
 import { h } from 'preact';
 import style from './style.css';
 import { useState } from 'preact/hooks';
+import postData from '../../lib/requests';
 
 const Login = () => {
 	const [name, setName] = useState();
 	const [password, setPassword] = useState();
 
-	const handleSubmit = (event) => {
+	const handleSubmit = async (event) => {
+		const loginInfo = {
+			email: name,
+			password
+		};
 		event.preventDefault();
-		console.log(`${name} ${password}`);
+		postData('login', loginInfo)
+			.then(data => {
+				console.log(data);
+			})
+			.catch(error => {
+				console.log(error);
+			});
 	};
 
 	return (

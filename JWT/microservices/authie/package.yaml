@@ -35,6 +35,8 @@ dependencies:
 - servant-server
 - transformers
 - warp
+- wai
+- wai-cors
 - hedis
 - jwt
 - containers
@@ -54,6 +56,7 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
     dependencies:
     - authie
 

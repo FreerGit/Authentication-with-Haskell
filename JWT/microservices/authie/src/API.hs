@@ -11,6 +11,9 @@ import Data.Proxy (Proxy(..))
 import Database.Persist (Key, Entity)
 import Database.Persist.Sql
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.Cors
+import Network.Wai (Middleware)
+-- import Network.Wai.Middleware.Servant.Options
 import Servant.API
 import Servant.Client
 import Servant.Server
@@ -27,7 +30,7 @@ import Config
 type UsersAPI =
          "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Int64
     :<|> "v1" :> "users"    :> Get '[JSON] [Entity User]
-    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Get '[JSON] Token
+    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] Token
 
     -- :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
@@ -71,9 +74,19 @@ usersServer env =
 usersAPI :: Proxy UsersAPI
 usersAPI = Proxy
 
+allowCors :: Middleware
+allowCors = cors (const $ Just appCorsResourcePolicy)
+
+appCorsResourcePolicy :: CorsResourcePolicy
+appCorsResourcePolicy =
+    simpleCorsResourcePolicy
+        { corsMethods = ["OPTIONS", "GET", "PUT", "POST"]
+        , corsRequestHeaders = ["Content-Type"]
+        }
+
 runServer :: IO ()
 runServer = do
     env <- runExceptT initialize
     case env of
         Left err -> putStrLn err
-        Right res -> run 8000 (serve usersAPI (usersServer res))
+        Right res -> run 8000 $ allowCors $ serve usersAPI (usersServer res)

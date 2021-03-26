@@ -29,3 +29,17 @@ mkJWT currentTime secret uid =
             }
         signer = hmacSecret secret
         in encodeSigned signer mempty cs
+
+-- verifyJWT :: UTCTime -> SecretKey -> Token -> Maybe Int
+-- verifyJWT currentTime secret token = do
+--   let signer = hmacSecret secret
+--   unverifiedJWT <- decode token
+--   verifiedJWT <- verify signer unverifiedJWT
+--   expTime <- exp . claims $ verifiedJWT
+--   now <- numericDate $ utcTimeToPOSIXSeconds currentTime
+--   guard (now < expTime)
+--   let kv = unClaimsMap . unregisteredClaims . claims $ verifiedJWT
+--   userIDVal <- Map.lookup userIDKey kv
+--   case userIDVal of
+--     Number userID -> return . fromIntegral $ coefficient userID
+--     _ -> Nothing
