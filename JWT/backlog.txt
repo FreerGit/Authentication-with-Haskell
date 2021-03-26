@@ -1,5 +1,6 @@
 ## Simply a backlog for features or bugs that are not prioritized ##
 
+### Authie
 - REMEMBER to change AUD claim when you know the address later on!
 
 - Dire need of refactor, get functionality off the ground and then look at this repository:
@@ -13,4 +14,7 @@ http://hackage.haskell.org/package/jose
 
 - unsafePassword type and Password type for non-hashed and hashed passwords.
 
+- Cors is currently set to http://localhost:8080, this policy should be changed
+if production or change in dev ports.
 
+### Frontend

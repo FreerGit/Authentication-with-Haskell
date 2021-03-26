@@ -32,7 +32,7 @@ import Authentication.JWT
 import Config
 
 type UsersAPI =
-         "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Int64
+         "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Text
     :<|> "v1" :> "users"    :> Get '[JSON] [Entity User]
     :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] Token 
 
@@ -59,11 +59,12 @@ loginHandler env user = do
 fetchUserHandler :: DBInfo -> Handler [Entity User]
 fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
             
-registerHandler :: DBInfo -> User -> Handler Int64
-registerHandler dbInfo user = do
-    maybeNewKey <- liftIO $ createUserDB dbInfo user
+registerHandler :: Env -> User -> Handler Text
+registerHandler env user = do
+    let connString = getConnString env
+    maybeNewKey <- liftIO $ createUserDB connString user
     case maybeNewKey of
-        Just key -> return key
+        Just key -> return "OK"
         Nothing -> Handler $ throwE $ err401 {errBody = "Could not create user"}
 
 -- deleteUserHandler :: Env -> Int64 -> Handler ()
@@ -74,7 +75,7 @@ registerHandler dbInfo user = do
 
 usersServer :: Env -> Server UsersAPI
 usersServer env =
-         registerHandler (getConnString env) 
+         registerHandler env
     :<|> fetchUserHandler (getConnString env)
     :<|> loginHandler env
     -- :<|> deleteUserHandler connString 
@@ -89,8 +90,9 @@ allowCors = cors (const $ Just appCorsResourcePolicy)
 appCorsResourcePolicy :: CorsResourcePolicy
 appCorsResourcePolicy =
     simpleCorsResourcePolicy
-        { corsMethods = ["OPTIONS", "GET", "PUT", "POST"]
-        , corsRequestHeaders = ["Content-Type"]
+        { corsOrigins = Just (["http://localhost:8080"], True) -- null for now since localhost
+        , corsMethods = ["OPTIONS", "GET", "PUT", "POST"]
+        , corsRequestHeaders = ["Authorization","Content-Type", "Cache-Control"]
         }
 
 runServer :: IO ()
