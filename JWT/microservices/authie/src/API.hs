@@ -1,9 +1,13 @@
 {-# LANGUAGE DataKinds          #-}
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE TypeOperators      #-}
+{-# LANGUAGE TypeApplications   #-}
 
 module API where
 
+import Data.Aeson (encode)
+import Data.Aeson.Types
+import GHC.Generics
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except (throwE, runExceptT)
 import Data.Int (Int64)
@@ -13,7 +17,7 @@ import Database.Persist.Sql
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.Cors
 import Network.Wai (Middleware)
--- import Network.Wai.Middleware.Servant.Options
+import Network.Wai.Middleware.Servant.Errors (errorMw, HasErrorBody(..))
 import Servant.API
 import Servant.Client
 import Servant.Server
@@ -30,9 +34,14 @@ import Config
 type UsersAPI =
          "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Int64
     :<|> "v1" :> "users"    :> Get '[JSON] [Entity User]
-    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] Token
+    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] Token 
 
     -- :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
+
+encodeErrorResponse body = do
+    err400 { errBody = encode body
+    , errHeaders = [("Content-Type", "application/json")]
+    }
 
 loginHandler :: Env -> User -> Handler Token
 loginHandler env user = do
@@ -44,8 +53,8 @@ loginHandler env user = do
             let secret = getJWTSecret env
             if validateHashedPassword (userPassword $ entityVal foundUser) (userPassword user)
                 then return $ mkJWT time secret (fromSqlKey $ entityKey foundUser)
-                else Handler $ throwE $ err402 {errBody = "Could not make JWT"}
-        Nothing -> Handler $ throwE $ err401 {errBody = "Could not find user"}
+                else Handler $ throwE $ err401 {errBody = "No such user"}
+        Nothing -> Handler $ throwE $ err402 {errBody = "No such user"}
 
 fetchUserHandler :: DBInfo -> Handler [Entity User]
 fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
@@ -89,4 +98,4 @@ runServer = do
     env <- runExceptT initialize
     case env of
         Left err -> putStrLn err
-        Right res -> run 8000 $ allowCors $ serve usersAPI (usersServer res)
+        Right res -> run 8000 $ allowCors $ errorMw @JSON @["error", "status"] $ serve usersAPI (usersServer res)

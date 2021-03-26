@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 68914f98658e1cff6df48b9d9d0140f6a629d6547cbc604d6c520213e7655930
+-- hash: dabf909d007568d82d47d222fedda7f65334d0b486fa6b05605abcb7af9bcf02
 
 name:           authie
 version:        1.0.0.0
@@ -55,6 +55,7 @@ library
     , persistent-template
     , servant
     , servant-client
+    , servant-errors
     , servant-server
     , text
     , time
@@ -89,6 +90,7 @@ executable authie-exe
     , persistent-template
     , servant
     , servant-client
+    , servant-errors
     , servant-server
     , text
     , time
@@ -124,6 +126,7 @@ test-suite authie-test
     , persistent-template
     , servant
     , servant-client
+    , servant-errors
     , servant-server
     , text
     , time

@@ -33,6 +33,7 @@ dependencies:
 - servant
 - servant-client
 - servant-server
+- servant-errors
 - transformers
 - warp
 - wai
