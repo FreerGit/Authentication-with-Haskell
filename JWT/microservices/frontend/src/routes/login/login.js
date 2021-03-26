@@ -1,7 +1,9 @@
 import { h } from 'preact';
 import style from './style.css';
 import { useState } from 'preact/hooks';
-import postData from '../../lib/requests';
+import { safePostData } from '../../lib/requests';
+import { login } from '../../lib/auth';
+import decode from 'jwt-decode';
 
 const Login = () => {
 	const [name, setName] = useState();
@@ -13,13 +15,14 @@ const Login = () => {
 			password
 		};
 		event.preventDefault();
-		postData('login', loginInfo)
-			.then(data => {
-				console.log(data);
+		safePostData('login', loginInfo)
+			.then(async (jwtToken) => {
+				const decodedJWT = decode(jwtToken);
+				const jwtTokenExp = decodedJWT.exp;
+				await login({ jwtToken, jwtTokenExp }, false);
 			})
-			.catch(error => {
-				console.log(error);
-			});
+			.catch(err => console.log(err));
+
 	};
 
 	return (

@@ -1,7 +1,8 @@
 import { h } from 'preact';
 import style from './style.css';
 import { useState } from 'preact/hooks';
-import postData from '../../lib/requests';
+import { safePostData } from '../../lib/requests';
+import { route } from 'preact-router';
 
 
 const Register = () => {
@@ -9,17 +10,18 @@ const Register = () => {
 	const [password, setPassword] = useState();
 
 	const handleSubmit = (event) => {
+		event.preventDefault();
 		const registerInfo = {
 			email: name,
 			password
 		};
-		event.preventDefault();
-		postData('register', registerInfo)
-			.then(data => {
-				console.log(data);
+		safePostData('register', registerInfo)
+			.then(res => {
+
+				route('/login', true);
 			})
-			.catch(error => {
-				console.log(error);
+			.catch(err => {
+				window.alert(err.error);
 			});
 	};
 

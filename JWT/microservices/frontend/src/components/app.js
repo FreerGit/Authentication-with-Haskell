@@ -7,8 +7,7 @@ import Header from './header/header';
 import Home from '../routes/home/home';
 import Register from '../routes/register/register';
 import Login from '../routes/login/login';
-
-
+import Hidden from '../routes/hidden/hidden';
 
 const App = () => {
 	return (
@@ -18,6 +17,7 @@ const App = () => {
 				<Home path="/" />
 				<Register path="/register" />
 				<Login path="/login" />
+				<Hidden path="/hidden" />
 			</Router>
 		</div >
 	);
