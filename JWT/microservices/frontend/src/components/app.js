@@ -8,8 +8,11 @@ import Home from '../routes/home/home';
 import Register from '../routes/register/register';
 import Login from '../routes/login/login';
 import Hidden from '../routes/hidden/hidden';
+import { logoutAllTabs, logout } from '../lib/auth';
 
 const App = () => {
+	window.addEventListener('storage', logoutAllTabs);
+
 	return (
 		<div id="app" >
 			<Header />

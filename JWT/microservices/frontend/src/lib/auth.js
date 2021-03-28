@@ -16,6 +16,19 @@ const login = async ({ jwtToken, jwtTokenExp }, redirect = false) => {
 	return;
 };
 
+const logout = async () => {
+	globalMemoryToken = null;
+	window.localStorage.setItem('logout', Date.now());
+	route('/login', true);
+};
+
+const logoutAllTabs = async (storageEvent) => {
+	if (storageEvent.key === 'logout') {
+		route('/login', true);
+	}
+};
+
+
 const getTokenOrReroute = async () => {
 	const token = globalMemoryToken;
 	if (!token) {
@@ -30,4 +43,4 @@ const tokenCheckMiddleware = async (request) => {
 	}
 };
 
-export { login };
+export { login, logout, logoutAllTabs };
