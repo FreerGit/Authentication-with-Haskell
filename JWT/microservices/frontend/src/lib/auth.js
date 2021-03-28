@@ -16,4 +16,18 @@ const login = async ({ jwtToken, jwtTokenExp }, redirect = false) => {
 	return;
 };
 
+const getTokenOrReroute = async () => {
+	const token = globalMemoryToken;
+	if (!token) {
+		route('/login', true);
+	}
+	return token;
+};
+
+const tokenCheckMiddleware = async (request) => {
+	if (globalMemoryToken) {
+		request['Authorization'] = `Bearer: ${globalMemoryToken}`;
+	}
+};
+
 export { login };
