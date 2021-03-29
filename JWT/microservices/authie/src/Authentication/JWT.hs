@@ -17,7 +17,8 @@ import qualified Data.ByteString.Lazy.Internal as BS
 import           Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.Text.Encoding         as T
-import          GHC.Generics
+import           GHC.Generics
+
 import           Config
 
 import Control.Monad.Trans.Except (throwE, runExceptT)
@@ -40,35 +41,30 @@ mkJWT currentTime secret uid =
             , unregisteredClaims =
                 ClaimsMap $
                     Map.fromList [("USERID", Number $ fromIntegral uid)],
-                exp = numericDate $ utcTimeToPOSIXSeconds currentTime + 30 * posixDayLength
+                exp = numericDate $ utcTimeToPOSIXSeconds currentTime + (3 * 60) -- 3 minutes
             }
         signer = hmacSecret secret
     in encodeSigned signer mempty cs
 
 
--- fastWrapper = do
---     env <- runExceptT initialize
---     case env of
---         Left err -> LB.putStrLn "fds"
---         Right res ->  do
---             let x = getJWTSecret res
---             let r = getRefreshSecret res
---             mkRefreshToken (LB.fromChunks . return . T.encodeUtf8 $ x) 5
-
-
--- mkRefreshToken (LB.fromChunks . return . T.encodeUtf8 $ x) 5
--- mkRefreshToken :: JWTsecret -> Int64 -> RefreshToken
-mkRefreshToken :: JWTsecret -> Int64 -> RefreshToken
-mkRefreshToken secret uid = do
-    let key = LB.fromChunks . return . T.encodeUtf8 $ secret
-    let digest = hmacSha256 key $ BS.packChars  ("refresh_token=" ++ (show uid)) 
-    pack $ showDigest digest
+mkRefreshToken :: UTCTime -> JWTsecret -> Int64 -> RefreshToken
+mkRefreshToken currentTime secret uid =     
+    let cs =
+            mempty -- mempty returns a default JWTClaimsSet
+            {
+                unregisteredClaims =
+                ClaimsMap $
+                    Map.fromList [("USERID", Number $ fromIntegral uid)],
+                exp = numericDate $ utcTimeToPOSIXSeconds currentTime + 7 * posixDayLength -- 1 week (ish)
+            }
+        signer = hmacSecret secret
+    in encodeSigned signer mempty cs
 
     
 mkTokens :: UTCTime -> JWTsecret -> Int64 -> AccessAndRefreshToken
 mkTokens currentTime secret uid = do
     let accessToken = mkJWT currentTime secret uid
-    let refreshToken = mkRefreshToken secret uid
+    let refreshToken = mkRefreshToken currentTime secret uid
     AccessAndRefreshToken accessToken refreshToken
 
 -- verifyJWT :: UTCTime -> SecretKey -> Token -> Maybe Int

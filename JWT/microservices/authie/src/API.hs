@@ -51,7 +51,6 @@ loginHandler env user = do
         Just foundUser -> do
             time <- liftIO getCurrentTime
             let secret = getJWTSecret env
-
             if validateHashedPassword (userPassword $ entityVal foundUser) (userPassword user)
                 then return $ mkTokens time secret (fromSqlKey $ entityKey foundUser)
                 else Handler $ throwE $ err401 {errBody = "No such user"}

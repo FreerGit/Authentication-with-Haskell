@@ -21,7 +21,6 @@ data Env
     = Env
     { connString :: DBInfo  
     , jwtSecret :: JWTsecret
-    , refreshSecret :: RefreshSecret
     } deriving (Generic, Show)
 
 type Init a = ExceptT String IO a
@@ -33,9 +32,6 @@ getConnString = connString
 
 getJWTSecret :: Env -> JWTsecret
 getJWTSecret = jwtSecret
-
-getRefreshSecret :: Env -> RefreshSecret
-getRefreshSecret = refreshSecret
 
 loadConfig :: Init Env
 loadConfig = ExceptT $ liftIO $ loadEnvFrom ".env" >> decodeEnv

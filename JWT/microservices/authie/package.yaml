@@ -39,12 +39,13 @@ dependencies:
 - wai
 - wai-cors
 - hedis
-- jwt
 - containers
 - time
 - load-env
 - envy
+- jwt
 - SHA
+# - libjwt-typed
 
 library:
   source-dirs: 
