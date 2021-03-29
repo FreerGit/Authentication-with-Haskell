@@ -17,4 +17,6 @@ http://hackage.haskell.org/package/jose
 - Cors is currently set to http://localhost:8080, this policy should be changed
 if production or change in dev ports.
 
+- JWT is signed with HS and not RSA atm
+
 ### Frontend

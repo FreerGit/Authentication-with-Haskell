@@ -34,7 +34,7 @@ import Config
 type UsersAPI =
          "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Text
     :<|> "v1" :> "users"    :> Get '[JSON] [Entity User]
-    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] Token 
+    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] AccessAndRefreshToken 
 
     -- :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
@@ -43,7 +43,7 @@ encodeErrorResponse body = do
     , errHeaders = [("Content-Type", "application/json")]
     }
 
-loginHandler :: Env -> User -> Handler Token
+loginHandler :: Env -> User -> Handler AccessAndRefreshToken
 loginHandler env user = do
     let connString = getConnString env
     maybeUser <- liftIO $ fetchUserDB connString (userEmail user)
@@ -51,8 +51,9 @@ loginHandler env user = do
         Just foundUser -> do
             time <- liftIO getCurrentTime
             let secret = getJWTSecret env
+
             if validateHashedPassword (userPassword $ entityVal foundUser) (userPassword user)
-                then return $ mkJWT time secret (fromSqlKey $ entityKey foundUser)
+                then return $ mkTokens time secret (fromSqlKey $ entityKey foundUser)
                 else Handler $ throwE $ err401 {errBody = "No such user"}
         Nothing -> Handler $ throwE $ err402 {errBody = "No such user"}
 

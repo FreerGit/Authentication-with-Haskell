@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dabf909d007568d82d47d222fedda7f65334d0b486fa6b05605abcb7af9bcf02
+-- hash: 7b9833ff473e8be739d5780d0fdd8e1990e781bccc6f58c311443522e47be0c3
 
 name:           authie
 version:        1.0.0.0
@@ -39,7 +39,8 @@ library
   hs-source-dirs:
       src
   build-depends:
-      aeson
+      SHA
+    , aeson
     , base >=4.7 && <5
     , bcrypt
     , bytestring
@@ -73,7 +74,8 @@ executable authie-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
-      aeson
+      SHA
+    , aeson
     , authie
     , base >=4.7 && <5
     , bcrypt
@@ -109,7 +111,8 @@ test-suite authie-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
+      SHA
+    , aeson
     , authie
     , base >=4.7 && <5
     , bcrypt

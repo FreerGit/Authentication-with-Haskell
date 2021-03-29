@@ -44,6 +44,7 @@ dependencies:
 - time
 - load-env
 - envy
+- SHA
 
 library:
   source-dirs: 
