@@ -4,7 +4,11 @@
 
 module Authentication.JWT where
 
-import qualified Data.Map as Map
+import qualified Data.Map                       as Map
+import qualified Data.ByteString.Lazy.Internal  as BS
+import qualified Data.ByteString.Lazy.Char8     as LB
+import qualified Data.Text.Encoding             as T
+
 import           Data.Text
 import           Web.JWT
 import           Data.Time.Clock (UTCTime)
@@ -13,15 +17,11 @@ import           Data.Aeson (ToJSON)
 import           Data.Aeson.Types (Value(Number))
 import           Prelude hiding (exp)
 import           Data.Int (Int64)
-import qualified Data.ByteString.Lazy.Internal as BS
 import           Data.Digest.Pure.SHA
-import qualified Data.ByteString.Lazy.Char8 as LB
-import qualified Data.Text.Encoding         as T
 import           GHC.Generics
 
 import           Config
 
-import Control.Monad.Trans.Except (throwE, runExceptT)
 type Token = Text
 type RefreshToken = Text
 type AccessExpiry = NumericDate

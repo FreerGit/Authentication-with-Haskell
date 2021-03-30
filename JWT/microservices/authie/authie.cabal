@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7b9833ff473e8be739d5780d0fdd8e1990e781bccc6f58c311443522e47be0c3
+-- hash: dd5f694996d95bf277fecfa95245997ac4b6db847b3d38ff765503d423f27e8f
 
 name:           authie
 version:        1.0.0.0
@@ -45,6 +45,7 @@ library
     , bcrypt
     , bytestring
     , containers
+    , cookie
     , envy
     , hedis
     , jwt
@@ -81,6 +82,7 @@ executable authie-exe
     , bcrypt
     , bytestring
     , containers
+    , cookie
     , envy
     , hedis
     , jwt
@@ -118,6 +120,7 @@ test-suite authie-test
     , bcrypt
     , bytestring
     , containers
+    , cookie
     , envy
     , hedis
     , jwt

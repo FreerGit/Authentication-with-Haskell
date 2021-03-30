@@ -5,6 +5,8 @@
 
 module API where
 
+import qualified Data.ByteString as BS
+
 import Data.Aeson (encode)
 import Data.Aeson.Types
 import GHC.Generics
@@ -22,7 +24,9 @@ import Servant.API
 import Servant.Client
 import Servant.Server
 import Data.Text (Text)
+import Data.Text.Encoding 
 import Data.Time.Clock (getCurrentTime)
+import Web.Cookie
 
 import Database.User
 import Database.Schema
@@ -32,9 +36,10 @@ import Authentication.JWT
 import Config
 
 type UsersAPI =
-         "v1" :> "register" :> ReqBody '[JSON] User :> Post '[JSON] Text
-    :<|> "v1" :> "users"    :> Get '[JSON] [Entity User]
-    :<|> "v1" :> "login"    :> ReqBody '[JSON] User :> Post '[JSON] AccessAndRefreshToken 
+         "v1" :> "register"   :> ReqBody '[JSON] User :> Post '[JSON] Text
+    :<|> "v1" :> "users"      :> Get '[JSON] [Entity User]
+    :<|> "v1" :> "login"      :> ReqBody '[JSON] User :> Post '[JSON] (Headers '[Header "Set-Cookie" SetCookie] Token)
+    -- :<|> "v1" :> "auth-check" :> ReqBody '[JSON] 
 
     -- :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
@@ -43,7 +48,7 @@ encodeErrorResponse body = do
     , errHeaders = [("Content-Type", "application/json")]
     }
 
-loginHandler :: Env -> User -> Handler AccessAndRefreshToken
+loginHandler :: Env -> User -> Handler (Headers '[Header "Set-Cookie" SetCookie] Token)
 loginHandler env user = do
     let connString = getConnString env
     maybeUser <- liftIO $ fetchUserDB connString (userEmail user)
@@ -52,7 +57,13 @@ loginHandler env user = do
             time <- liftIO getCurrentTime
             let secret = getJWTSecret env
             if validateHashedPassword (userPassword $ entityVal foundUser) (userPassword user)
-                then return $ mkTokens time secret (fromSqlKey $ entityKey foundUser)
+                then do
+                    let tokens = mkTokens time secret (fromSqlKey $ entityKey foundUser)
+                    let cookie = defaultSetCookie { setCookieName = "ref_token"
+                                                  , setCookieValue = encodeUtf8 $ refreshToken tokens
+                                                  , setCookieHttpOnly = True
+                                                  }
+                    return $ addHeader cookie (accessToken tokens)
                 else Handler $ throwE $ err401 {errBody = "No such user"}
         Nothing -> Handler $ throwE $ err402 {errBody = "No such user"}
 
