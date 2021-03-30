@@ -20,3 +20,7 @@ if production or change in dev ports.
 - JWT is signed with HS and not RSA atm
 
 ### Frontend
+
+- Currently the logout / refresh logic is "hard-coded", this should happend automagically
+under a specific sub-route of pages, for example router has two routes. One for authenticated,
+and one for unauthenticated.
