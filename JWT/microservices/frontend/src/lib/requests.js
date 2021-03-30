@@ -26,5 +26,4 @@ const safePostData = async (urlExtender, data) => {
 	return resp.ok ? json : Promise.reject(json);
 };
 
-
 export { postData, safePostData };

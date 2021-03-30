@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd5f694996d95bf277fecfa95245997ac4b6db847b3d38ff765503d423f27e8f
+-- hash: 22d86bd756d4e8e9b2894fc2743f5897796af69cd412efdb94687d96f651bb68
 
 name:           authie
 version:        1.0.0.0
@@ -55,6 +55,7 @@ library
     , persistent
     , persistent-postgresql
     , persistent-template
+    , scientific
     , servant
     , servant-client
     , servant-errors
@@ -92,6 +93,7 @@ executable authie-exe
     , persistent
     , persistent-postgresql
     , persistent-template
+    , scientific
     , servant
     , servant-client
     , servant-errors
@@ -130,6 +132,7 @@ test-suite authie-test
     , persistent
     , persistent-postgresql
     , persistent-template
+    , scientific
     , servant
     , servant-client
     , servant-errors

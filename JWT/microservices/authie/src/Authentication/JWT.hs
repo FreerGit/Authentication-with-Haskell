@@ -14,7 +14,9 @@ import           Web.JWT
 import           Data.Time.Clock (UTCTime)
 import           Data.Time.Clock.POSIX
 import           Data.Aeson (ToJSON)
-import           Data.Aeson.Types (Value(Number))
+import           Control.Monad (guard)
+import           Data.Aeson.Types (Value (Bool, Number))
+import           Data.Scientific  (coefficient)
 import           Prelude hiding (exp)
 import           Data.Int (Int64)
 import           Data.Digest.Pure.SHA
@@ -30,6 +32,7 @@ data AccessAndRefreshToken
     = AccessAndRefreshToken 
         { accessToken :: Token
         , refreshToken :: RefreshToken
+        , refreshTokenExp :: UTCTime
         } deriving (Show, Generic, ToJSON)
 
 
@@ -47,36 +50,40 @@ mkJWT currentTime secret uid =
     in encodeSigned signer mempty cs
 
 
-mkRefreshToken :: UTCTime -> JWTsecret -> Int64 -> RefreshToken
-mkRefreshToken currentTime secret uid =     
+mkRefreshToken :: POSIXTime -> JWTsecret -> Int64 -> (RefreshToken, POSIXTime)
+mkRefreshToken expiry secret uid = do
     let cs =
             mempty -- mempty returns a default JWTClaimsSet
             {
                 unregisteredClaims =
                 ClaimsMap $
                     Map.fromList [("USERID", Number $ fromIntegral uid)],
-                exp = numericDate $ utcTimeToPOSIXSeconds currentTime + 7 * posixDayLength -- 1 week (ish)
+                exp = numericDate expiry
             }
         signer = hmacSecret secret
-    in encodeSigned signer mempty cs
+    (encodeSigned signer mempty cs, expiry)
+
+    -- encodeSigned signer mempty cs, expiry
 
     
 mkTokens :: UTCTime -> JWTsecret -> Int64 -> AccessAndRefreshToken
 mkTokens currentTime secret uid = do
+    let posix = utcTimeToPOSIXSeconds currentTime + (2 * 60)
     let accessToken = mkJWT currentTime secret uid
-    let refreshToken = mkRefreshToken currentTime secret uid
-    AccessAndRefreshToken accessToken refreshToken
+    let (refreshToken, expiry) = mkRefreshToken posix secret uid
+    AccessAndRefreshToken accessToken refreshToken (posixSecondsToUTCTime expiry)
 
--- verifyJWT :: UTCTime -> SecretKey -> Token -> Maybe Int
--- verifyJWT currentTime secret token = do
---   let signer = hmacSecret secret
---   unverifiedJWT <- decode token
---   verifiedJWT <- verify signer unverifiedJWT
---   expTime <- exp . claims $ verifiedJWT
---   now <- numericDate $ utcTimeToPOSIXSeconds currentTime
---   guard (now < expTime)
---   let kv = unClaimsMap . unregisteredClaims . claims $ verifiedJWT
---   userIDVal <- Map.lookup userIDKey kv
---   case userIDVal of
---     Number userID -> return . fromIntegral $ coefficient userID
---     _ -> Nothing
+
+verifyJWT :: UTCTime -> JWTsecret -> Token -> Maybe Int
+verifyJWT currentTime secret token = do
+  let signer = hmacSecret secret
+  unverifiedJWT <- decode token
+  verifiedJWT <- verify signer unverifiedJWT
+  expTime <- exp . claims $ verifiedJWT
+  now <- numericDate $ utcTimeToPOSIXSeconds currentTime
+  guard (now < expTime) -- if expired, reject
+  let kv = unClaimsMap . unregisteredClaims . claims $ verifiedJWT
+  userIDVal <- Map.lookup "USERID" kv
+  case userIDVal of
+    Number userID -> return . fromIntegral $ coefficient userID
+    _ -> Nothing

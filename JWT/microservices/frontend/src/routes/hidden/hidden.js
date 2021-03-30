@@ -1,14 +1,20 @@
 import { h } from 'preact';
 import style from './style.css';
 import { useEffect } from 'preact/hooks';
-
-import { logout } from '../../lib/auth'
+import { logout, fetchNewJWT } from '../../lib/auth';
 
 
 const Hidden = () => {
-	// useEffect(() => {
-	// 	inMem
-	// });
+	//before JWT expires, fetch new one with httpOnly refreshToken
+	useEffect(() => {
+		fetchNewJWT();
+		const fetchNewBeforeExpiry =
+			(process.env.PREACT_APP_TOKEN_TIMER_MIN
+				- process.env.PREACT_APP_LEEWAY_FOR_TOKEN_TIMER_MIN) * (6 * 1000); // minutes -> milliseconds
+		const interval = setInterval(() => fetchNewJWT(), fetchNewBeforeExpiry);
+
+		return () => clearInterval(interval);
+	}, []);
 
 	return (
 		<div class={style.hidden}>

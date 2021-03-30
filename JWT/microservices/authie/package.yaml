@@ -46,6 +46,7 @@ dependencies:
 - jwt
 - SHA
 - cookie
+- scientific
 # - libjwt-typed
 
 library:

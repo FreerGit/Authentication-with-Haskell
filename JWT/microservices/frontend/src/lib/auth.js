@@ -9,7 +9,6 @@ const login = async ({ jwtToken, jwtTokenExp }, redirect = false) => {
 		token: jwtToken,
 		expiry: jwtTokenExp
 	};
-
 	if (!redirect) {
 		route('/hidden', true);
 	}
@@ -28,11 +27,30 @@ const logoutAllTabs = async (storageEvent) => {
 	}
 };
 
+const fetchNewJWT = async () => {
+	console.log('fetching new JWT');
+	const url = `${process.env.PREACT_APP_SERVER_URL}refreshToken`;
+	const resp = await fetch(url, {
+		method: 'POST',
+		credentials: 'include',
+	});
+	if (resp.ok) {
+		const json = await resp.json();
+		console.log("ok")
+		globalMemoryToken = json;
+	} else {
+		console.log("logout")
+		logout();
+	}
+
+	// console.log(json);
+	// console.log(resp.ok);
+};
 
 const getTokenOrReroute = async () => {
 	const token = globalMemoryToken;
 	if (!token) {
-		route('/login', true);
+		logout();
 	}
 	return token;
 };
@@ -43,4 +61,4 @@ const tokenCheckMiddleware = async (request) => {
 	}
 };
 
-export { login, logout, logoutAllTabs };
+export { login, logout, logoutAllTabs, fetchNewJWT, getTokenOrReroute };

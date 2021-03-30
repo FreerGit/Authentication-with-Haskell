@@ -12,6 +12,7 @@ import Data.Aeson.Types
 import GHC.Generics
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Except (throwE, runExceptT)
+import Control.Monad.Trans.Maybe (runMaybeT)
 import Data.Int (Int64)
 import Data.Proxy (Proxy(..))
 import Database.Persist (Key, Entity)
@@ -22,7 +23,7 @@ import Network.Wai (Middleware)
 import Network.Wai.Middleware.Servant.Errors (errorMw, HasErrorBody(..))
 import Servant.API
 import Servant.Client
-import Servant.Server
+import Servant.Server 
 import Data.Text (Text)
 import Data.Text.Encoding 
 import Data.Time.Clock (getCurrentTime)
@@ -36,17 +37,33 @@ import Authentication.JWT
 import Config
 
 type UsersAPI =
-         "v1" :> "register"   :> ReqBody '[JSON] User :> Post '[JSON] Text
-    :<|> "v1" :> "users"      :> Get '[JSON] [Entity User]
-    :<|> "v1" :> "login"      :> ReqBody '[JSON] User :> Post '[JSON] (Headers '[Header "Set-Cookie" SetCookie] Token)
-    -- :<|> "v1" :> "auth-check" :> ReqBody '[JSON] 
+         "v1" :> "register"     :> ReqBody '[JSON] User :> Post '[JSON] Text
+    :<|> "v1" :> "users"        :> Get '[JSON] [Entity User]
+    :<|> "v1" :> "login"        :> ReqBody '[JSON] User :> Post '[JSON] (Headers '[Header "Set-Cookie" SetCookie] Token)
+    :<|> "v1" :> "refreshToken" :> Header "Cookie" Text :> Post '[JSON] (Headers '[Header "Set-Cookie" SetCookie] Token)
 
     -- :<|> "users" :> "delete" :> Capture "userid" Int64 :> Get '[JSON] ()
 
-encodeErrorResponse body = do
-    err400 { errBody = encode body
+-- encodeErrorResponse :: Text -> ServantErr -> Handler ()
+encodeErrorResponse body errFunc = do
+    errFunc { errBody = encode (body :: Text)
     , errHeaders = [("Content-Type", "application/json")]
     }
+
+---------------------------------------------------------------------------------
+
+registerHandler :: Env -> User -> Handler Text
+registerHandler env user = do
+    let connString = getConnString env
+    maybeNewKey <- liftIO $ createUserDB connString user
+    case maybeNewKey of
+        Just key -> return "OK"
+        Nothing -> Handler $ throwE $ encodeErrorResponse "Could not create user" err401
+
+---------------------------------------------------------------------------------
+
+fetchUserHandler :: DBInfo -> Handler [Entity User]
+fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
 
 loginHandler :: Env -> User -> Handler (Headers '[Header "Set-Cookie" SetCookie] Token)
 loginHandler env user = do
@@ -62,21 +79,38 @@ loginHandler env user = do
                     let cookie = defaultSetCookie { setCookieName = "ref_token"
                                                   , setCookieValue = encodeUtf8 $ refreshToken tokens
                                                   , setCookieHttpOnly = True
+                                                  , setCookieExpires = Just $ refreshTokenExp tokens
                                                   }
                     return $ addHeader cookie (accessToken tokens)
-                else Handler $ throwE $ err401 {errBody = "No such user"}
-        Nothing -> Handler $ throwE $ err402 {errBody = "No such user"}
+            else Handler $ throwE $ encodeErrorResponse "No such user" err402
+        Nothing -> Handler $ throwE $ encodeErrorResponse "No such user" err402
 
-fetchUserHandler :: DBInfo -> Handler [Entity User]
-fetchUserHandler dbInfo = liftIO $ fetchUsersDB dbInfo
-            
-registerHandler :: Env -> User -> Handler Text
-registerHandler env user = do
-    let connString = getConnString env
-    maybeNewKey <- liftIO $ createUserDB connString user
-    case maybeNewKey of
-        Just key -> return "OK"
-        Nothing -> Handler $ throwE $ err401 {errBody = "Could not create user"}
+---------------------------------------------------------------------------------
+
+refreshTokenHandler :: Env -> Maybe Text -> Handler (Headers '[Header "Set-Cookie" SetCookie] Token)
+refreshTokenHandler env (Just refreshCookie) = do
+    let extractCookie = parseCookies $ encodeUtf8 refreshCookie
+    let extractedToken = decodeUtf8 $ snd $ head extractCookie -- FIX, unsafe head
+    time <- liftIO getCurrentTime
+    let secret = getJWTSecret env
+    let maybeValidateToken = verifyJWT time secret extractedToken
+    case maybeValidateToken of
+        Just uid -> do
+            let tokens = mkTokens time secret $ fromIntegral uid
+            let cookie = defaultSetCookie { setCookieName = "ref_token"
+                                          , setCookieValue = encodeUtf8 $ refreshToken tokens
+                                          , setCookieHttpOnly = True
+                                          , setCookieExpires = Just $ refreshTokenExp tokens
+                                          }
+            return $ addHeader cookie (accessToken tokens)
+        Nothing -> Handler $ throwE $ encodeErrorResponse "refresh token expired" err402
+    
+refreshTokenHandler env Nothing = Handler $ throwE $ encodeErrorResponse "No refresh token" err402
+
+
+
+
+---------------------------------------------------------------------------------
 
 -- deleteUserHandler :: Env -> Int64 -> Handler ()
 -- deleteUserHandler env uid = do
@@ -89,6 +123,7 @@ usersServer env =
          registerHandler env
     :<|> fetchUserHandler (getConnString env)
     :<|> loginHandler env
+    :<|> refreshTokenHandler env
     -- :<|> deleteUserHandler connString 
     
 
