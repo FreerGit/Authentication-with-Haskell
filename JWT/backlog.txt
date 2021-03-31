@@ -9,18 +9,7 @@ https://github.com/dandoh/web-haskell-graphql-postgres-boilerplate
 - I am not handling connection pools correctly, im starting a new pool on a new request...
 I think...?? I think i should initialize the pool with the config and pass it around.
 
-- Use jose library for JWT instead, supposedly safer??
-http://hackage.haskell.org/package/jose
-
-- unsafePassword type and Password type for non-hashed and hashed passwords.
-
 - Cors is currently set to http://localhost:8080, this policy should be changed
 if production or change in dev ports.
 
-- JWT is signed with HS and not RSA atm
-
 ### Frontend
-
-- Currently the logout / refresh logic is "hard-coded", this should happend automagically
-under a specific sub-route of pages, for example router has two routes. One for authenticated,
-and one for unauthenticated.

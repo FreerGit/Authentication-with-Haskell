@@ -34,6 +34,7 @@ const fetchNewJWT = async () => {
 	if (resp.ok) {
 		const json = await resp.json();
 		globalMemoryToken = json;
+		console.log('yuuup');
 		return true;
 	}
 	return false;
