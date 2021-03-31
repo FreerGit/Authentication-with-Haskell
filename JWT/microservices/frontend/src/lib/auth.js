@@ -1,11 +1,12 @@
 import { route } from 'preact-router';
-
+import decode from 'jwt-decode';
 let globalMemoryToken;
 
-const login = async ({ jwtToken, jwtTokenExp }, redirect = false) => {
+const login = async ({ jwtToken }, redirect = false) => {
+	const decodedJWT = await decode(jwtToken);
 	globalMemoryToken = {
-		token: jwtToken,
-		expiry: jwtTokenExp
+		jwt: jwtToken,
+		exp: decodedJWT.exp
 	};
 	if (!redirect) {
 		route('/authed/hidden', true);
@@ -33,6 +34,7 @@ const fetchNewJWT = async () => {
 	});
 	if (resp.ok) {
 		const json = await resp.json();
+		console.log(json);
 		globalMemoryToken = json;
 		console.log('yuuup');
 		return true;
@@ -52,4 +54,8 @@ const isAuthenticated = async () => {
 	return false;
 };
 
-export { login, logout, logoutAllTabs, fetchNewJWT, isAuthenticated };
+const getJWTInfo = async () => {
+	return globalMemoryToken;
+};
+
+export { login, logout, logoutAllTabs, fetchNewJWT, isAuthenticated, getJWTInfo };

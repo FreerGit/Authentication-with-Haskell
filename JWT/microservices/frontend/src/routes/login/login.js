@@ -3,7 +3,6 @@ import style from './style.css';
 import { useState } from 'preact/hooks';
 import { safePostData } from '../../lib/requests';
 import { login } from '../../lib/auth';
-import decode from 'jwt-decode';
 
 const Login = () => {
 	const [name, setName] = useState();
@@ -17,9 +16,7 @@ const Login = () => {
 		event.preventDefault();
 		safePostData('login', loginInfo)
 			.then(async (jwtToken) => {
-				const decodedJWT = decode(jwtToken);
-				const jwtTokenExp = decodedJWT.exp;
-				await login({ jwtToken, jwtTokenExp }, false);
+				await login({ jwtToken }, false);
 			})
 			.catch(err => console.log(err));
 	};
