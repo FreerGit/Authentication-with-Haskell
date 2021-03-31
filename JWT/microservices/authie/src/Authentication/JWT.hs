@@ -44,7 +44,7 @@ mkJWT currentTime secret uid =
             , unregisteredClaims =
                 ClaimsMap $
                     Map.fromList [("USERID", Number $ fromIntegral uid)],
-                exp = numericDate $ utcTimeToPOSIXSeconds currentTime + (3 * 60) -- 3 minutes
+                exp = numericDate $ utcTimeToPOSIXSeconds currentTime + (5 * 60) -- 5 minutes
             }
         signer = hmacSecret secret
     in encodeSigned signer mempty cs
@@ -68,7 +68,7 @@ mkRefreshToken expiry secret uid = do
     
 mkTokens :: UTCTime -> JWTsecret -> Int64 -> AccessAndRefreshToken
 mkTokens currentTime secret uid = do
-    let posix = utcTimeToPOSIXSeconds currentTime + (2 * 60)
+    let posix = utcTimeToPOSIXSeconds currentTime + 7 * posixDayLength -- 7 days
     let accessToken = mkJWT currentTime secret uid
     let (refreshToken, expiry) = mkRefreshToken posix secret uid
     AccessAndRefreshToken accessToken refreshToken (posixSecondsToUTCTime expiry)

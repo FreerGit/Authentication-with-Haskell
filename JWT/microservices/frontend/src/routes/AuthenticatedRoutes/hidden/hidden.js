@@ -9,7 +9,7 @@ const Hidden = () => {
 	useEffect(() => {
 		const fetchNewBeforeExpiry =
 			(process.env.PREACT_APP_TOKEN_TIMER_MIN
-				- process.env.PREACT_APP_LEEWAY_FOR_TOKEN_TIMER_MIN) * (6 * 1000); // minutes -> milliseconds
+				- process.env.PREACT_APP_LEEWAY_FOR_TOKEN_TIMER_MIN) * (4 * 60 * 1000); // minutes -> milliseconds
 		const interval = setInterval(() => fetchNewJWT(), fetchNewBeforeExpiry);
 
 		return () => clearInterval(interval);

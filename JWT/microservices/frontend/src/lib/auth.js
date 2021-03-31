@@ -51,10 +51,4 @@ const isAuthenticated = async () => {
 	return false;
 };
 
-const tokenCheckMiddleware = async (request) => {
-	if (globalMemoryToken) {
-		request['Authorization'] = `Bearer: ${globalMemoryToken}`;
-	}
-};
-
 export { login, logout, logoutAllTabs, fetchNewJWT, isAuthenticated };
