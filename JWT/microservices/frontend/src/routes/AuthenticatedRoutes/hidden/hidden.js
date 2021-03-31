@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import style from './style.css';
 import { useEffect } from 'preact/hooks';
-import { logout, fetchNewJWT } from '../../lib/auth';
+import { logout, fetchNewJWT } from '../../../lib/auth';
 
 
 const Hidden = () => {

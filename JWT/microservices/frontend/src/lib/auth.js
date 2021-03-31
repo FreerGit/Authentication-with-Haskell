@@ -36,20 +36,21 @@ const fetchNewJWT = async () => {
 	});
 	if (resp.ok) {
 		const json = await resp.json();
-		console.log("ok")
 		globalMemoryToken = json;
-	} else {
-		console.log("logout")
-		logout();
+		console.log('ok');
+		return true;
 	}
-
-	// console.log(json);
-	// console.log(resp.ok);
+	console.log('logging out');
+	return false;
 };
 
 const isAuthenticated = async () => {
 	const token = globalMemoryToken;
 	if (token) {
+		return true;
+	}
+	const validRefreshToken = fetchNewJWT();
+	if (validRefreshToken) {
 		return true;
 	}
 	return false;

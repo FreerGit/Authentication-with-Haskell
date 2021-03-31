@@ -1,44 +1,25 @@
 import { h } from 'preact';
-import { route, Router } from 'preact-router';
-
-import Header from './header/header';
+import { Router } from 'preact-router';
 
 // Code-splitting is automated for `routes` directory
+import Header from './header/header';
 import Home from '../routes/home/home';
 import Register from '../routes/register/register';
 import Login from '../routes/login/login';
-import Hidden from '../routes/hidden/hidden';
-import { logoutAllTabs, isAuthenticated } from '../lib/auth';
+import AuthenticatedRoutes from '../routes/AuthenticatedRoutes/authenticatedRoutes';
 
-const AuthenticatedRoutes = () => {
-	const handleAuthRoutes = async () => {
-		const isAuthed = await isAuthenticated();
-		console.log(isAuthed);
-		if (!isAuthed) route('/login', true);
-	};
-	return (
-		<div>
-			<Router onChange={handleAuthRoutes}>
-				<Hidden path={'/hidden'} />
-			</Router>
-		</div>
-	);
-};
-
+import { logoutAllTabs } from '../lib/auth';
 
 const App = () => {
 	window.addEventListener('storage', logoutAllTabs);
-	// fetchNewJWT();
-
-
 	return (
 		<div id="app" >
 			<Header />
 			<Router>
+				<AuthenticatedRoutes path="/authed/:rest*" />
 				<Home path="/" />
 				<Register path="/register" />
 				<Login path="/login" />
-				<AuthenticatedRoutes path="/authed/:rest*" />
 				<Home default />
 				{/* <Error type="404" default /> */}
 			</Router>
