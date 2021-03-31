@@ -10,7 +10,7 @@ const login = async ({ jwtToken, jwtTokenExp }, redirect = false) => {
 		expiry: jwtTokenExp
 	};
 	if (!redirect) {
-		route('/hidden', true);
+		route('/authed/hidden', true);
 	}
 	return;
 };
@@ -47,12 +47,12 @@ const fetchNewJWT = async () => {
 	// console.log(resp.ok);
 };
 
-const getTokenOrReroute = async () => {
+const isAuthenticated = async () => {
 	const token = globalMemoryToken;
-	if (!token) {
-		logout();
+	if (token) {
+		return true;
 	}
-	return token;
+	return false;
 };
 
 const tokenCheckMiddleware = async (request) => {
@@ -61,4 +61,4 @@ const tokenCheckMiddleware = async (request) => {
 	}
 };
 
-export { login, logout, logoutAllTabs, fetchNewJWT, getTokenOrReroute };
+export { login, logout, logoutAllTabs, fetchNewJWT, isAuthenticated };

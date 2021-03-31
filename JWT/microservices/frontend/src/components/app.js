@@ -1,5 +1,5 @@
 import { h } from 'preact';
-import { Router } from 'preact-router';
+import { route, Router } from 'preact-router';
 
 import Header from './header/header';
 
@@ -8,10 +8,28 @@ import Home from '../routes/home/home';
 import Register from '../routes/register/register';
 import Login from '../routes/login/login';
 import Hidden from '../routes/hidden/hidden';
-import { logoutAllTabs, logout } from '../lib/auth';
+import { logoutAllTabs, isAuthenticated } from '../lib/auth';
+
+const AuthenticatedRoutes = () => {
+	const handleAuthRoutes = async () => {
+		const isAuthed = await isAuthenticated();
+		console.log(isAuthed);
+		if (!isAuthed) route('/login', true);
+	};
+	return (
+		<div>
+			<Router onChange={handleAuthRoutes}>
+				<Hidden path={'/hidden'} />
+			</Router>
+		</div>
+	);
+};
+
 
 const App = () => {
 	window.addEventListener('storage', logoutAllTabs);
+	// fetchNewJWT();
+
 
 	return (
 		<div id="app" >
@@ -20,7 +38,9 @@ const App = () => {
 				<Home path="/" />
 				<Register path="/register" />
 				<Login path="/login" />
-				<Hidden path="/hidden" />
+				<AuthenticatedRoutes path="/authed/:rest*" />
+				<Home default />
+				{/* <Error type="404" default /> */}
 			</Router>
 		</div >
 	);

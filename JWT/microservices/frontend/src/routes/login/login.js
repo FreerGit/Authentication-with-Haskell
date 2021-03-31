@@ -22,7 +22,6 @@ const Login = () => {
 				await login({ jwtToken, jwtTokenExp }, false);
 			})
 			.catch(err => console.log(err));
-
 	};
 
 	return (
