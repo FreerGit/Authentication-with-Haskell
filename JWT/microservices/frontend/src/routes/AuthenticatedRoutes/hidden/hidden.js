@@ -18,7 +18,7 @@ const Hidden = () => {
 	return (
 		<div class={style.hidden}>
 			<h1>Hidden comp</h1>
-			<button onClick={() => { logout(); }} />
+			<button class={style.logout} onClick={() => { logout(); }}>Logout</button>
 
 		</div >
 	);

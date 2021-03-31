@@ -3,8 +3,6 @@ import { route } from 'preact-router';
 let globalMemoryToken;
 
 const login = async ({ jwtToken, jwtTokenExp }, redirect = false) => {
-	console.log(jwtToken);
-	console.log(jwtTokenExp);
 	globalMemoryToken = {
 		token: jwtToken,
 		expiry: jwtTokenExp
@@ -28,7 +26,6 @@ const logoutAllTabs = async (storageEvent) => {
 };
 
 const fetchNewJWT = async () => {
-	console.log('fetching new JWT');
 	const url = `${process.env.PREACT_APP_SERVER_URL}refreshToken`;
 	const resp = await fetch(url, {
 		method: 'POST',
@@ -37,10 +34,8 @@ const fetchNewJWT = async () => {
 	if (resp.ok) {
 		const json = await resp.json();
 		globalMemoryToken = json;
-		console.log('ok');
 		return true;
 	}
-	console.log('logging out');
 	return false;
 };
 
