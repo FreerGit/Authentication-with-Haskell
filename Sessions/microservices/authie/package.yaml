@@ -43,10 +43,11 @@ dependencies:
 - time
 - load-env
 - envy
-- jwt
 - SHA
 - cookie
 - scientific
+- clientsession
+- base64-bytestring
 # - libjwt-typed
 
 library:

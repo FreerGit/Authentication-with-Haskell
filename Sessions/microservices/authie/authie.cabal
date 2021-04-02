@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 22d86bd756d4e8e9b2894fc2743f5897796af69cd412efdb94687d96f651bb68
+-- hash: 97dece81b46c35ad62a6084461c61487e7c094442822e5cec66cf5cdfe60eb4d
 
 name:           authie
 version:        1.0.0.0
@@ -28,8 +28,8 @@ source-repository head
 library
   exposed-modules:
       API
-      Authentication.JWT
       Authentication.Password
+      Authentication.Session
       Config
       Database.Schema
       Database.User
@@ -42,13 +42,14 @@ library
       SHA
     , aeson
     , base >=4.7 && <5
+    , base64-bytestring
     , bcrypt
     , bytestring
+    , clientsession
     , containers
     , cookie
     , envy
     , hedis
-    , jwt
     , load-env
     , monad-logger
     , mtl
@@ -80,13 +81,14 @@ executable authie-exe
     , aeson
     , authie
     , base >=4.7 && <5
+    , base64-bytestring
     , bcrypt
     , bytestring
+    , clientsession
     , containers
     , cookie
     , envy
     , hedis
-    , jwt
     , load-env
     , monad-logger
     , mtl
@@ -119,13 +121,14 @@ test-suite authie-test
     , aeson
     , authie
     , base >=4.7 && <5
+    , base64-bytestring
     , bcrypt
     , bytestring
+    , clientsession
     , containers
     , cookie
     , envy
     , hedis
-    , jwt
     , load-env
     , monad-logger
     , mtl

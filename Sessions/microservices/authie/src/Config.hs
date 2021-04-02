@@ -14,13 +14,13 @@ import Database.Persist.Postgresql (ConnectionString)
 -- connString = "host=127.0.0.1 port=5432 user=admin dbname=admin password=admin"
 
 type DBInfo = ConnectionString
-type JWTsecret = Text
+type SecretKey = Text
 type RefreshSecret = Text
 
 data Env 
     = Env
     { connString :: DBInfo  
-    , jwtSecret :: JWTsecret
+    , secretKey :: SecretKey
     } deriving (Generic, Show)
 
 type Init a = ExceptT String IO a
@@ -30,8 +30,8 @@ instance FromEnv Env
 getConnString :: Env -> DBInfo
 getConnString = connString
 
-getJWTSecret :: Env -> JWTsecret
-getJWTSecret = jwtSecret
+getSecret :: Env -> SecretKey
+getSecret = secretKey
 
 loadConfig :: Init Env
 loadConfig = ExceptT $ liftIO $ loadEnvFrom ".env" >> decodeEnv
