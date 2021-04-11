@@ -1,7 +1,38 @@
 # Authentication with Haskell
-I want to learn more about FP and authentication in general, so I combined them. I will implement JWT authentication and session based authentication, so far JWT is done.
+I want to learn more about FP and authentication in general, so I combined them. I will implement JWT based authentication.
 
 # JWT Authentication
+## Get started
+To actually run the code you need to create various .env files:
+under Authentication-with-Haskell/JWT/ create a file called: database.env
+```txt
+POSTGRES_USER="myUsername"
+POSTGRES_PASSWORD="myPassword"
+POSTGRES_DB="myDBname"
+```
+Then under Authentication-with-Haskell/JWT/microservices/frontend/ create a file called .env:
+```txt
+PREACT_APP_SERVER_URL=http://localhost:8000/v1/
+PREACT_APP_CLIENT_URL=http://localhost:8080/
+```
+You can change the ports (change in docker-compose.yml in that case too) but the server_url /v1/ is hardcoded so do not change that.
+
+Lastly create another .env file under Authentication-with-Haskell/JWT/microservices/authie/
+```txt
+CONN_STRING="host=127.0.0.1 port=5432 user=myUsername dbname=myDBname password=myPassword"
+JWT_SECRET=mySuperSecretRandom256byteKey
+```
+Note that user dbname and password should be consistent with the database.env file created at root.
+
+For generation of a safe JWT_secret that can be copied into the .env file, simply run:
+```javascript
+node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
+```
+
+With this setup you should be able to run the system with:
+
+Under Authentication-with-Haskell/JWT/microservices run `docker-compose up`, everything should build and run automatically
+
 ## The basics
 JWT or 'jot' are basically a way of doing authentication in stateless way, which means that in theory when a users requests a resource or wants to login, no database lookups are needed. This would massively decrease authentication time since the server is not IO bound. For an in depth explanation of what the JWT standard is: https://jwt.io/introduction
 
