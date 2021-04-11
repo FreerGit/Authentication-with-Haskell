@@ -31,7 +31,12 @@ node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
 
 With this setup you should be able to run the system with:
 
-Under Authentication-with-Haskell/JWT/microservices run `docker-compose up`, everything should build and run automatically
+Under Authentication-with-Haskell/JWT/microservices run `docker-compose build` -> `docker-compose up`, everything should build and run automatically.
+The docker container for authie will install GHC (haskell compiler) so its going to take a while (sorry).
+
+Now the the system is up and running, just visi [`localhost:8080`](http://localhost:8080) in your browser.
+
+NOTE: Sometimes the downloads for the authie container fails, just build and up agian, not sure why :man_shrugging:
 
 ## The basics
 JWT or 'jot' are basically a way of doing authentication in stateless way, which means that in theory when a users requests a resource or wants to login, no database lookups are needed. This would massively decrease authentication time since the server is not IO bound. For an in depth explanation of what the JWT standard is: https://jwt.io/introduction

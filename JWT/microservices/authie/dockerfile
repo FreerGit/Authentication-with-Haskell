@@ -1,0 +1,11 @@
+FROM haskell
+
+WORKDIR /app
+
+COPY . .
+
+RUN stack setup --allow-different-user
+
+run stack build --exec authie-exe
+
+# CMD [ "stack", "exec", "authie-exe" ]
