@@ -1,11 +1,37 @@
-FROM haskell
+FROM debian:8.6
 
-WORKDIR /app
+# Install dependencies
+RUN apt-get update && \
+  apt-get install --assume-yes curl gcc libgmp-dev make xz-utils zlib1g-dev libpq-dev
 
-COPY . .
+# Install Stack - linux only, if you want windows/macOS then change the package that is being
+# curled from stackage.
+RUN curl --location https://www.stackage.org/stack/linux-x86_64 > stack.tar.gz && \
+  tar xf stack.tar.gz && \
+  cp stack-*-linux-x86_64/stack /usr/local/bin/stack && \
+  rm -f -r stack.tar.gz stack-*-linux-x86_64/stack && \
+  stack --version
 
-RUN stack setup --allow-different-user
+# Install GHC
+WORKDIR /project
+COPY stack.yaml package.yaml /project/
+RUN stack setup --allow-different-user && stack exec -- ghc --version
 
-run stack build --exec authie-exe
+# Install stack-dependencies
+COPY package.yaml /project
+RUN stack build --only-dependencies
 
-# CMD [ "stack", "exec", "authie-exe" ]
+# Build source
+COPY . /project
+RUN stack build --copy-bins --local-bin-path /usr/local/bin
+
+# Run it
+# COPY wait-for-postgres.sh wait-for-postgres.sh 
+RUN chmod +x wait-for-postgres.sh
+# CMD ["./wait-for-postgres.sh" , "jwt_databse_1:5432" , "--strict" , "--timeout=10" , "--" , "/usr/local/bin/authie-exe"]
+CMD ["./wait-for-postgres.sh" , "-t", "0", "172.19.0.3:5432", "--" , "/usr/local/bin/authie-exe"]
+
+# RUN stack setup --allow-different-user
+
+# run stack build --exec authie-exe
+

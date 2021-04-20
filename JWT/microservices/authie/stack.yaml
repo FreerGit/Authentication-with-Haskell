@@ -69,4 +69,4 @@ extra-deps:
 # docker:
 #     enable: true
 
-# allow-different-user: true
+allow-different-user: true

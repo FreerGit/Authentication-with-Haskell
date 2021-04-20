@@ -19,9 +19,11 @@ You can change the ports (change in docker-compose.yml in that case too) but the
 
 Lastly create another .env file under Authentication-with-Haskell/JWT/microservices/authie/
 ```txt
-CONN_STRING="host=127.0.0.1 port=5432 user=myUsername dbname=myDBname password=myPassword"
+CONN_STRING="host=172.19.0.3 port=5432 user=myUsername dbname=myDBname password=myPassword"
 JWT_SECRET=mySuperSecretRandom256byteKey
 ```
+IMPORTANT: host has to be the internal network for the docker-compose, for me its 172.19.0.3 (There is probably a way to map this but.... idk :man_shrugging:.)
+
 Note that user dbname and password should be consistent with the database.env file created at root.
 
 For generation of a safe JWT_secret that can be copied into the .env file, simply run:
@@ -32,11 +34,10 @@ node -e "console.log(require('crypto').randomBytes(256).toString('base64'));"
 With this setup you should be able to run the system with:
 
 Under Authentication-with-Haskell/JWT/microservices run `docker-compose build` -> `docker-compose up`, everything should build and run automatically.
-The docker container for authie will install GHC (haskell compiler) so its going to take a while (sorry).
+The docker container for authie will install GHC (haskell compiler) so it is going to take a while, like 10 minutes (sorry).
 
-Now the the system is up and running, just visi [`localhost:8080`](http://localhost:8080) in your browser.
+Now the the system is up and running, just visit [`localhost:8080`](http://localhost:8080) in your browser.
 
-NOTE: Sometimes the downloads for the authie container fails, just build and up agian, not sure why :man_shrugging:
 
 ## The basics
 JWT or 'jot' are basically a way of doing authentication in stateless way, which means that in theory when a users requests a resource or wants to login, no database lookups are needed. This would massively decrease authentication time since the server is not IO bound. For an in depth explanation of what the JWT standard is: https://jwt.io/introduction
@@ -80,5 +81,5 @@ I noted earlier that the overall security of the website has to be quite high in
 
 So we have covered the very basics of client-to-server authentication with JWT, it works, it's probably OK from an security perspective but.... I wouldn't trust a bank if they had my implementation :man_shrugging:.
 
-The more interesting use case is server-to-server authentication! I believe that a session based authentication system makes a lot more sense for client-to-server authentication but combining JWTs for server-to-server authentication may be a really good middlegournd. Because assuming that the connection between the servers are over HTTPS we do not have to be worried about ill intent, assuming the servers ONLY allow connections between eachother and will not communicate with outsiders (CORS). We can how have a stateful safe authentication system for the users and a stateless fast authentication for microservice requests. The microservice only need to verify that the issuer of the token is authentic and it has not expired. If that holds true the server will respond to the authenticated task. This would be an order of magnitude faster than verifying than having each microservice verifying sessions through database IO. 
+The more interesting use case is server-to-server authentication! I believe that a session based authentication system makes a lot more sense for client-to-server authentication but combining JWTs for server-to-server authentication may be a really good middleground. Because assuming that the connection between the servers are over HTTPS we do not have to be worried about ill intent, assuming the servers ONLY allow connections between eachother and will not communicate with outsiders (CORS). We can how have a stateful safe authentication system for the users and a stateless fast authentication for microservice requests. The microservice only need to verify that the issuer of the token is authentic and it has not expired. If that holds true the server will respond to the authenticated task. This would be an order of magnitude faster than verifying than having each microservice verifying sessions through database IO. 
 

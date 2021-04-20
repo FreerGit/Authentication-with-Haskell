@@ -1,17 +1,5 @@
 version: '3'
 services: 
-    frontend:
-        build: ./microservices/frontend
-        ports: 
-            - "8080:8080"
-        volumes: 
-            - "./microservices/frontend:/app"
-    authie:
-        build: ./microservices/authie
-        ports:
-            - "8000:8000"
-        volumes:
-            - "./microservices/authie:/app"
     database:
         image: "postgres" # use latest official postgres version
         env_file:
@@ -20,6 +8,24 @@ services:
         - database-data:/var/lib/postgresql/data/ # persist data even if container shuts down
         ports:
         - "127.0.0.1:5432:5432"
+
+    frontend:
+        build: ./microservices/frontend
+        ports: 
+            - "8080:8080"
+        volumes: 
+            - "./microservices/frontend:/app"
+            
+    authie:
+        build: ./microservices/authie
+        ports:
+            - "127.0.0.1:8000:8000"
+        volumes:
+            - "./microservices/authie:/project"
+        env_file:
+            - "./microservices/authie/.env"
+        depends_on:
+            - database
 
     redis:
         image: redis
